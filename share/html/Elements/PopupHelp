@@ -15,6 +15,6 @@ if ($key) {
     $has_help = $help_content;
 }
 </%init>
-% if ($has_help) {
+% if (RT->Config->Get('ShowInlineHelp', $session{CurrentUser}) && $has_help) {
 <span data-help="<% $key %>" data-content="<% $help_content %>" data-action="replace" style="display: none;"/>
 % }
