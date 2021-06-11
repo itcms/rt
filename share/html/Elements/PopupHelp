@@ -1,0 +1,20 @@
+<%args>
+$key => ''
+</%args>
+<%init>
+my $has_help;
+my $help_class;
+my $help_content;
+if ($key) {
+    my $lh = $session{'CurrentUser'}->LanguageHandle;
+    my @locs = ( $lh->language_tag(), $lh->fallback_languages() );
+    my $help_class = GetSystemHelpClass( \@locs );
+    if ($help_class && $help_class->Id) {
+        $help_content = GetHelpArticleContent( $help_class->Id, $key );
+    }
+    $has_help = $help_content;
+}
+</%init>
+% if ($has_help) {
+<span data-help="<% $key %>" data-content="<% $help_content %>" data-action="replace" style="display: none;"/>
+% }
