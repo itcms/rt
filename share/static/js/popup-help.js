@@ -98,8 +98,11 @@ function applyPopupHelpAction( entry, $els ) {
 	}
 }
 
-// render all the help icons and popover-ify them
-function renderPopupHelpItems( list ) {
+// Dynamically load the help topic corresponding to a DOM element using AJAX
+// Should be called with the DOM element as the 'this' context of the function,
+// making it directly compatible with the 'content' property of the popper.js
+// popover() method, which is its primary purpose
+const popupHelpAjax = function() {
 	const isDefined = function(x) { return typeof x !== "undefined" }
 	const buildUrl = function(key) { return RT.Config.WebHomePath + "/Helpers/HelpTopic?key=" + encodeURIComponent(key) }
 	const boolVal = function(str) {
@@ -111,9 +114,38 @@ function renderPopupHelpItems( list ) {
 		}
 	}
 
+	const $el = jQuery(this)
+	const title = $el.data("help") || $el.data("title") || $el.data("originalTitle")
+	var content = $el.data("content")
+	if (content) {
+		return content
+	} else {
+		const isAsync = isDefined($el.data("async")) ? boolVal($el.data("async")) : true
+		if (isAsync) {
+			const tmpId = "tmp-id-" + jQuery.now()
+			jQuery.ajax({
+				url: buildUrl(title), dataType: "html",
+				dataType: "html",
+				success: function(response, statusText, xhr) {
+					jQuery("#" + tmpId).html(xhr.responseText)
+				},
+				error: function(e) {
+					jQuery("#" + tmpId).html("<div class='text-danger'>Error loading help for '" + title + "': " + e)
+				}
+			})
+			return "<div id='" + tmpId + "'>Loading...</div>"
+		} else {
+			return "<div class='text-danger'>No help content available for '" + title + "'.</div>"
+		}
+	}
+}
+
+// render all the help icons and popover-ify them
+function renderPopupHelpItems( list ) {
 	list = list || pagePopupHelpItems
 	if (list && Array.isArray(list) && list.length) {
 		list.forEach(function(entry) {
+			console.log("processing entry:", entry)
 			const $els = applySelectorQueryOrFunc(entry.selector)
 			if ( $els ) {
 				applyPopupHelpAction( entry, $els )
@@ -122,32 +154,7 @@ function renderPopupHelpItems( list ) {
         jQuery('[data-toggle="popover"]').popover({
 			trigger: 'focus',
 			html: true,
-			content: function() {
-				const $el = jQuery(this)
-				const title = $el.data("help") || $el.data("title") || $el.data("originalTitle")
-				var content = $el.data("content")
-				if (content) {
-					return content
-				} else {
-					const isAsync = isDefined($el.data("async")) ? boolVal($el.data("async")) : true
-					if (isAsync) {
-						const tmpId = "tmp-id-" + jQuery.now()
-						jQuery.ajax({
-							url: buildUrl(title), dataType: "html",
-							dataType: "html",
-							success: function(response, statusText, xhr) {
-								jQuery("#" + tmpId).html(xhr.responseText)
-							},
-							error: function(e) {
-								jQuery("#" + tmpId).html("<div class='text-danger'>Error loading help for '" + title + "': " + e)
-							}
-						})
-						return "<div id='" + tmpId + "'>Loading...</div>"
-					} else {
-						return "<div class='text-danger'>No help content available for '" + title + "'.</div>"
-					}
-				}
-			}
+			content: popupHelpAjax
 		})
 	}
 }
