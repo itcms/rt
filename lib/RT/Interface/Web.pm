@@ -5233,7 +5233,6 @@ Often, the class_id will come from GetSystemHelpClass, but it does not have to.
 =cut
 
 sub GetHelpArticleContent {
-    use Data::Printer;
     my $class_id = shift || return '';      # required
     my $article_name = shift || return '';  # required
 
