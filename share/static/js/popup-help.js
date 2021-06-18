@@ -24,6 +24,8 @@ function getPopupHelpAction( entry={} ) {
 	entry.action = entry.action || "append"
 	if ( typeof(entry.action) === "string" ) {
 		const funcMap = {
+			"before": beforePopupHelp,
+			"after": afterPopupHelp,
 			"append": appendPopupHelp,
 			"prepend": prependPopupHelp,
 			"offset": offsetPopupHelp,
@@ -37,6 +39,16 @@ function getPopupHelpAction( entry={} ) {
 
 function getPopupHelpActionArgs( entry={}, $els ) {
 	return entry.actionArgs ? [ $els, entry, entry.actionArgs ] : [ $els, entry ]
+}
+
+function beforePopupHelp( $els, item={}, options={} ) {
+	item.action = options.action = "before"
+	return helpify( $els, item, options )
+}
+
+function afterPopupHelp( $els, item={}, options={} ) {
+	item.action = options.action = "after"
+	return helpify( $els, item, options )
 }
 
 function appendPopupHelp( $els, item={}, options={} ) {
@@ -66,8 +78,11 @@ function helpify($els, item={}, options={}) {
 		const title = $el.data("title") || item.title || $el.data("help")
 		const content = $el.data("content") || item.content
 		switch(action) {
+			case "before":
+				$el.before( buildPopupHelpHtml( title, content ) )
+				break
 			case "prepend":
-				$el.parent().prepend( buildPopupHelpHtml( title, content ) )
+				$el.prepend( buildPopupHelpHtml( title, content ) )
 				break
 			case "offset":
 				$el.append( buildPopupHelpHtml( title, content ) ).offset( options )
@@ -75,7 +90,10 @@ function helpify($els, item={}, options={}) {
 			case "replace":
 				$el.replaceWith( buildPopupHelpHtml( title, content ) )
 				break
-			case "append":  // intentionally fallthrough, as 'append' is the default
+			case "append":
+				$el.append( buildPopupHelpHtml( title, content ) )
+				break
+			case "after":  // intentionally fallthrough, as 'after' is the default
 			default:
 				$el.parent().append( buildPopupHelpHtml( title, content ) )
 		}

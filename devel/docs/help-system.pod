@@ -170,12 +170,12 @@ with some static help content that includes custom HTML
 
     <button data-help="Save Widget"
             data-content='Saves the <font color="red">Widget</font> to RT'
-            data-action="append">Save</button>
+            data-action="after">Save</button>
 
 Or we could omit the C<data-content> altogether to have RT return the help content from the
 matching C<"List Sprockets"> Article when the user clicks the help icon
 
-    <button data-help="List Sprockets" data-action="append">List</button>
+    <button data-help="List Sprockets" data-action="after">List</button>
 
 =head2 JavaScript
 
@@ -280,7 +280,7 @@ Optional. The action that should be taken with each help icon that results from 
 of C<selector>. Responsible for actually adding the help icons to the DOM. This controls, for
 example, where the icon should be rendered relative to the matching DOM element.
 
-If missing, C<"replace"> is the default.
+If missing, C<"after"> is the default.
 
 =over
 
@@ -290,15 +290,21 @@ are supported:
 
 =over
 
+=item * I<before>
+The help icon will be prepended to the DOM I<before> the element(s) matched by C<selector>
+
+=item * I<after>
+Default. The help icon will be appended to the DOM I<after> the element(s) matched by C<selector>
+
 =item * I<append>
-The help icon will be appended to the DOM I<after> the element(s) matched by C<selector>
+The help icon will be appended to the end of the DOM element(s) matched by C<selector>
 
 =item * I<prepend>
-The help icon will be prepended to the DOM I<before> the element(s) matched by C<selector>
+The help icon will be prepended to the beginning of the DOM element(s) matched by C<selector>
 
 =item * I<replace>
 The help icon will be inserted into the DOM I<in place of> the element(s) matched by C<selector>.
-This is the default behavior. It is used, for example, by the C</Elements/PopupHelp> Mason component.
+This action is used, for example, by the C</Elements/PopupHelp> Mason component.
 
 =item * I<offset>
 The help icon will be offset from the element(s) matched by C<selector> by the amounts 
