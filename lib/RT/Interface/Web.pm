@@ -5238,7 +5238,7 @@ sub GetHelpArticleContent {
 
     # find the article of the given class
     my $Article = RT::Article->new( RT->SystemUser );
-    my ($ret, $msg) = $Article->LoadByCols( Name => $article_name, Class => $class_id );
+    my ($ret, $msg) = $Article->LoadByCols( Name => $article_name, Class => $class_id, Disabled => 0 );
     if ( $Article and $Article->Id ) {
         RT::Logger->debug("Found help article id: " . $Article->Id);
         my $class = $Article->ClassObj;
