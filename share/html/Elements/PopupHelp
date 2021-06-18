@@ -51,16 +51,18 @@ $key => ''
 my $has_help;
 my $help_class;
 my $help_content;
+my $help_title;
 if ($key) {
     my $lh = $session{'CurrentUser'}->LanguageHandle;
     my @locs = ( $lh->language_tag(), $lh->fallback_languages() );
     my $help_class = GetSystemHelpClass( \@locs );
     if ($help_class && $help_class->Id) {
+        $help_title = GetHelpArticleTitle( $help_class->id, $key ) || $key;
         $help_content = GetHelpArticleContent( $help_class->Id, $key );
     }
     $has_help = $help_content;
 }
 </%init>
 % if (RT->Config->Get('ShowInlineHelp', $session{CurrentUser}) && $has_help) {
-<span data-help="<% $key %>" data-content="<% $help_content %>" data-action="replace" style="display: none;"/>
+<span data-help="<% $help_title %>" data-content="<% $help_content %>" data-action="replace" style="display: none;"/>
 % }

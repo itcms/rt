@@ -63,7 +63,7 @@ function helpify($els, item={}, options={}) {
 	$els.each(function(index) {
 		const $el = jQuery($els.get(index))
 		const action = $el.data("action") || item.action || options.action
-		const title = $el.data("help") || $el.data("title") || item.title
+		const title = $el.data("title") || item.title || $el.data("help")
 		const content = $el.data("content") || item.content
 		switch(action) {
 			case "prepend":
@@ -115,7 +115,7 @@ const popupHelpAjax = function() {
 	}
 
 	const $el = jQuery(this)
-	const title = $el.data("help") || $el.data("title") || $el.data("originalTitle")
+	const key = $el.data("help") || $el.data("title") || $el.data("originalTitle")
 	var content = $el.data("content")
 	if (content) {
 		return content
@@ -124,18 +124,18 @@ const popupHelpAjax = function() {
 		if (isAsync) {
 			const tmpId = "tmp-id-" + jQuery.now()
 			jQuery.ajax({
-				url: buildUrl(title), dataType: "html",
+				url: buildUrl(key), dataType: "html",
 				dataType: "html",
 				success: function(response, statusText, xhr) {
 					jQuery("#" + tmpId).html(xhr.responseText)
 				},
 				error: function(e) {
-					jQuery("#" + tmpId).html("<div class='text-danger'>Error loading help for '" + title + "': " + e)
+					jQuery("#" + tmpId).html("<div class='text-danger'>Error loading help for '" + key + "': " + e)
 				}
 			})
 			return "<div id='" + tmpId + "'>Loading...</div>"
 		} else {
-			return "<div class='text-danger'>No help content available for '" + title + "'.</div>"
+			return "<div class='text-danger'>No help content available for '" + key + "'.</div>"
 		}
 	}
 }

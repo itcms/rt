@@ -64,7 +64,7 @@ query. The following would associate a help topic to a specific button
 
     <script>
     jQuery(document).ready(function() {
-        addPopupHelpItems( [ { "selector": "button#save-form", "title": "My Topic" } ] )
+        addPopupHelpItems( { "selector": "button#save-form", "title": "My Topic" } )
     })
     </script>
 
@@ -144,8 +144,14 @@ attributes to any HTML elements.
 =over
 
 =item * C<data-help>
-Required. The name of the help topic. Used as the title of the popup dialog. If C<data-content>
+Required. The name of the help topic. If C<data-content>
 is omitted, content will come from an Article with this Name.
+Used as the title of the popup dialog if C<data-title> is not supplied or if in
+asynchronous mode. See L</Async>.
+
+=item * C<data-title>
+Optional. The title to use for the popup dialog box. If omitted, C<data-help> will
+be used.
 
 =item * C<data-content>
 Optional. The help content. If omitted, asynchronous mode will be used to dynamically retrieve
@@ -316,39 +322,39 @@ Any additional arguments that should be passed to the C<action> function.
 
 Add a help topic named C<"My Topic"> to the DOM element with an id of C<"ticket-id">
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         {
             selector: "#ticket-id",
             title: "My Topic"
         }
-    ])
+    )
 
 Add a help topic named C<"Phone"> and custom HTML content to the DOM element with an id of C<"phone-nbr">
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         {
             selector: "#phone-nbr",
             title: "Phone",
             content: "The customer phone number. This <i>MUST</i> include the country code."
         }
-    ])
+    )
 
 Add more than one rule at a time
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         { selector: "#ticket-status", title: "Status Topic" },
         { selector: "#ticket-queue",  title: "Queue Topic"  }
-    ])
+    )
 
 Add a help topic named C<"A Note on Submitting Forms"> to every C<E<lt>buttonE<gt>> element
 of type C<submit>.
 
-    addPopupHelpItems([{ selector: "button[type='submit']", title: "A Note on Submitting Forms" }])
+    addPopupHelpItems( { selector: "button[type='submit']", title: "A Note on Submitting Forms" } )
 
 Find every C<E<lt>divE<gt>> element with a C<"heading"> class, and add a help topic named 
 C<"One"> to the first one, C<"Two"> to the second one, and C<"Three"> to the third one.
 
-    addPopupHelpItems([{ selector: "div.heading", title: [ "One", "Two", "Three" ]}])
+    addPopupHelpItems( { selector: "div.heading", title: [ "One", "Two", "Three" ]} )
 
 Use a custom C<selector> function to match divs that have ids starting with C<"ACME-"> but only when 
 not working locally in developer mode. Determine the article title from the matching ids by stripping
@@ -366,23 +372,23 @@ off the C<"ACME-"> portion
         return $el.id.replace("ACME-", "")
     }
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         {
             selector: acmeDivs,
             title:    makeTitle
         }
-    ])
+    )
 
 Prepend help topics to all form radio buttons
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         {
             selector: "form input[type='radio']",
             topic:    "Radio Button Help",
             content:  "You can only select one at a time",
             action:   "prepend"
         }
-    ])
+    )
 
 Provide help for every field in each section on a ticket display page, but place each
 help icon in a line at the top of its respective section. Use asynchronous mode for
@@ -394,12 +400,12 @@ help content, using the field text as the help topic.
         $a.append( buildPopupHelpHtml( fieldName ) )
     }
 
-    addPopupHelpItems([
+    addPopupHelpItems(
         {
             selector: ".titlebox .card-body .form-row .label",
             action:   sectionInsert
         }
-    ])
+    )
 
 =head2 Programmatic API
 

@@ -5225,6 +5225,29 @@ sub GetSystemHelpClass {
     return;
 }
 
+=head3 GetHelpArticleTitle class_id, article_name
+
+Returns the value of the C<"Display Name"> Custom Field of an Article of the given Class.
+Often, the class_id will come from GetSystemHelpClass, but it does not have to.
+
+=cut
+
+sub GetHelpArticleTitle {
+    my $class_id = shift || return '';      # required
+    my $article_name = shift || return '';  # required
+
+    # find the article of the given class
+    my $Article = RT::Article->new( RT->SystemUser );
+    my ($ret, $msg) = $Article->LoadByCols( Name => $article_name, Class => $class_id, Disabled => 0 );
+    if ( $Article and $Article->Id ) {
+        return $Article->FirstCustomFieldValue('Display Name') || '';
+    }
+
+    # no match was found
+    RT::Logger->debug("No help article found for '$article_name'");
+    return '';
+}
+
 =head3 GetHelpArticleContent class_id, article_name
 
 Returns the raw, unscrubbed and unescaped Content of an Article of the given Class.
