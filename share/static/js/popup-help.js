@@ -5,7 +5,7 @@ var pagePopupHelpItems = [
 
 // add one or more items to the list of help entries to process for the page
 function addPopupHelpItems() {
-	const args = [].slice.call(arguments)
+	const args = [].slice.call(arguments).reduce(function(acc,val) { return acc.concat(val) }, [] )
 	pagePopupHelpItems = pagePopupHelpItems || []
 	pagePopupHelpItems = pagePopupHelpItems.concat(args)
 }
