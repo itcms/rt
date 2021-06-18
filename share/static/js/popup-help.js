@@ -31,7 +31,12 @@ function getPopupHelpAction( entry={} ) {
 			"offset": offsetPopupHelp,
 			"replace": replacePopupHelp
 		}
-		return funcMap[entry.action]
+		if (funcMap.hasOwnProperty(entry.action)) {
+			return funcMap[entry.action]
+		} else {
+			console.error("Unknown action '" + entry.action + "' using 'after' instead")
+			return funcMap.after
+		}
 	} else if ( typeof(entry.action) === "function" ) {
 		return entry.action
 	}
