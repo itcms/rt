@@ -251,9 +251,9 @@ An array of help topic names. They will be applied in order corresponding to the
 returned by the C<selector>
 
 =item * I<Function>
-A JavaScript function that will be called for each element matched by the C<selector> that
+A JavaScript function that will be called with the elements matched by the C<selector> that
 should return the help topic for that element. That is, the function signagure is 
-C<function( $el ) { ... }>
+C<function( $els ) { ... }>
 
 =back
 
@@ -368,8 +368,8 @@ off the C<"ACME-"> portion
         }
     }
 
-    var makeTitle = function( $el ) {
-        return $el.id.replace("ACME-", "")
+    var makeTitle = function( el ) {
+        return el.id.replace("ACME-", "")
     }
 
     addPopupHelpItems(
@@ -394,10 +394,13 @@ Provide help for every field in each section on a ticket display page, but place
 help icon in a line at the top of its respective section. Use asynchronous mode for
 help content, using the field text as the help topic.
 
-    var sectionInsert = function( $el, rule, options ) {
-        const $a = $el.closest(".titlebox").find(".titlebox-title.card-header a")
-        const fieldName = $el.text().replace(":", "")
-        $a.append( buildPopupHelpHtml( fieldName ) )
+    var sectionInsert = function( $els, rule, options ) {
+        $els.each(function(i,el) {
+            const $el = jQuery(el)
+            const $a = $el.closest(".titlebox").find(".titlebox-title.card-header a")
+            const fieldName = $el.text().replace(":", "")
+            $a.append( buildPopupHelpHtml( fieldName ) )
+        })
     }
 
     addPopupHelpItems(
