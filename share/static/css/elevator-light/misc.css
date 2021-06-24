@@ -160,3 +160,7 @@ span.pagenum {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+ul.ui-autocomplete {
+    z-index: 9999;
+}
