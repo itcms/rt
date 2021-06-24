@@ -21,6 +21,7 @@ import {
     faAngleDoubleLeft as fasAngleDoubleLeft,
     faAngleRight as fasAngleRight,
     faAngleDoubleRight as fasAngleDoubleRight,
+    faFilter as fasFilter
 } from '@fortawesome/free-solid-svg-icons'
 
 
@@ -68,6 +69,7 @@ library.add(
     fasAngleDoubleLeft,
     fasAngleRight,
     fasAngleDoubleRight,
+    fasFilter,
     // Regular
     farEdit,
     farBookmark,
