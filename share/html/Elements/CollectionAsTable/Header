@@ -135,16 +135,18 @@ foreach my $col ( @Format ) {
         $loc_title = loc($m->comp('/Elements/ScrubHTML', Content => $title));
     }
 
-    if ( $AllowSorting and $col->{'attribute'}
-        and my $attr = $m->comp(
+    my $attribute;
+    if ( $col->{'attribute'} ) {
+        $attribute = $m->comp(
             "/Elements/ColumnMap",
             Class => $column_map_class,
             Name  => $col->{'attribute'},
             Attr  => 'attribute'
-        )
-      )
-    {
-        $attr = ProcessColumnMapValue( $attr, Arguments => [ $col->{'attribute'} ], Escape => 0 );
+        );
+    }
+
+    if ( $AllowSorting and $attribute ) {
+        my $attr = ProcessColumnMapValue( $attribute, Arguments => [ $col->{'attribute'} ], Escape => 0 );
 
         my $new_order = 'ASC';
         $new_order = ($Order[0] // '') eq 'ASC'? 'DESC': 'ASC'
@@ -161,6 +163,20 @@ foreach my $col ( @Format ) {
     }
     else {
         $m->out( $loc_title );
+    }
+
+    if ( $Class eq 'RT::Tickets' ) {
+        my $attr = ProcessColumnMapValue( $attribute, Arguments => [ $col->{'attribute'} ], Escape => 1 );
+        if ( ( $attr || '' ) =~ /^(?:Subject|Status|Queue|Owner|Creator|LastUpdatedBy)$/ ) {
+            my $base_query = $ARGS{BaseQuery} || $ARGS{Query};
+            my $query      = $ARGS{Query};
+            RT::Interface::Web::EscapeHTML( \$base_query );
+            RT::Interface::Web::EscapeHTML( \$query );
+
+            $m->out(
+                qq{ <a href="javascript:void(0)" class="search-filter" data-attribute="$attr" data-query="$query" data-base-query="$base_query" class="btn btn-primary button"><span class="fas fa-filter"></span></a>}
+            );
+        }
     }
     $m->out('</th>');
 }

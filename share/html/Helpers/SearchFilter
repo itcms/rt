@@ -1,0 +1,224 @@
+%# BEGIN BPS TAGGED BLOCK {{{
+%#
+%# COPYRIGHT:
+%#
+%# This software is Copyright (c) 1996-2021 Best Practical Solutions, LLC
+%#                                          <sales@bestpractical.com>
+%#
+%# (Except where explicitly superseded by other copyright notices)
+%#
+%#
+%# LICENSE:
+%#
+%# This work is made available to you under the terms of Version 2 of
+%# the GNU General Public License. A copy of that license should have
+%# been provided with this software, but in any event can be snarfed
+%# from www.gnu.org.
+%#
+%# This work is distributed in the hope that it will be useful, but
+%# WITHOUT ANY WARRANTY; without even the implied warranty of
+%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%# General Public License for more details.
+%#
+%# You should have received a copy of the GNU General Public License
+%# along with this program; if not, write to the Free Software
+%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+%# 02110-1301 or visit their web page on the internet at
+%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
+%#
+%#
+%# CONTRIBUTION SUBMISSION POLICY:
+%#
+%# (The following paragraph is not intended to limit the rights granted
+%# to you to modify and distribute this software under the terms of
+%# the GNU General Public License and is only of importance to you if
+%# you choose to contribute your changes and enhancements to the
+%# community by submitting them to Best Practical Solutions, LLC.)
+%#
+%# By intentionally submitting any modifications, corrections or
+%# derivatives to this work, or any other work intended for use with
+%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
+%# you are the copyright holder for those contributions and you grant
+%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
+%# royalty-free, perpetual, license to use, copy, create derivative
+%# works based on those contributions, and sublicense and distribute
+%# those contributions and any derivatives thereof.
+%#
+%# END BPS TAGGED BLOCK }}}
+<div class="modal-dialog" role="document">
+  <form name="search-results-filter" id="search-results-filter">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><&|/l&>Filter Results</&></h5>
+        <a href="javascript:void(0)" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </a>
+      </div>
+      <div class="modal-body">
+        <div class="form-row <% $Attribute eq 'Subject' ? '' : 'hidden' %>">
+          <div class="label col-3">
+              <&|/l&>Subject</&>:
+          </div>
+          <div class="value col-9">
+              <input class="form-control" name="Subject" value="<% $filter{Subject} // '' %>" />
+          </div>
+        </div>
+        <div class="form-row <% $Attribute eq 'Status' ? '' : 'hidden' %>">
+          <div class="label col-3">
+              <&|/l&>Status</&>:
+          </div>
+          <div class="value col-9">
+            <ul class="list-group list-group-compact">
+%         for my $status ( sort { lc $a cmp lc $b } keys %status  ) {
+              <li class="list-group-item">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" id="Status-<% $status %>" name="Status" class="custom-control-input" value="<% $status %>" <% $filter{Status}{$status} ? 'checked="checked"' : '' |n %> />
+                  <label class="custom-control-label" for="Status-<% $status %>"><% $status %></label>
+                </div>
+              </li>
+%         }
+            </ul>
+          </div>
+        </div>
+        <div class="form-row <% $Attribute eq 'Queue' ? '' : 'hidden' %>">
+          <div class="label col-3">
+              <&|/l&>Queue</&>:
+          </div>
+          <div class="value col-9">
+            <ul class="list-group list-group-compact">
+%           for my $queue ( sort { lc $a->Name cmp lc $b->Name } @queues ) {
+              <li class="list-group-item">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" id="Queue-<% $queue->Id %>" name="Queue" class="custom-control-input" value="<% $queue->Id %>" <% $filter{Queue}{$queue->Id} ? 'checked="checked"' : '' |n %> />
+                  <label class="custom-control-label" for="Queue-<% $queue->Id %>"><% $queue->Name %></label>
+                </div>
+              </li>
+%           }
+            </ul>
+          </div>
+        </div>
+        <div class="form-row <% $Attribute eq 'Owner' ? '' : 'hidden' %>">
+          <div class="label col-3">
+            <&|/l&>Owner</&>:
+          </div>
+          <div class="value col-9">
+            <& /Elements/SelectOwner, Name => 'Owner', Default => $filter{Owner} &>
+          </div>
+        </div>
+
+%       for my $field ( qw/Creator LastUpdatedBy/ ) {
+        <div class="form-row <% $Attribute eq $field ? '' : 'hidden' %>">
+          <div class="label col-3">
+            <% loc($field) %>:
+          </div>
+          <div class="value col-9">
+            <input class="form-control" data-autocomplete="Users" name="<% $field %>" value="<% $filter{$field} %>" data-autocomplete-return="Name" />
+          </div>
+        </div>
+%       }
+
+      </div>
+      <div class="modal-footer">
+        <div class="form-row justify-content-end">
+          <div class="col-auto">
+            <input type="button" class="button btn btn-primary" data-dismiss="modal" name="Apply" value="<% loc('Cancel') %>" />
+          </div>
+          <div class="col-auto">
+            <input type="button" class="button btn btn-primary" onclick="filterSearchResults()" name="Apply" value="<% loc('Apply') %>" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<%INIT>
+return unless $ARGS{Query};
+
+my $tickets = RT::Tickets->new($session{CurrentUser});
+my ( $ok ) = $tickets->FromSQL($ARGS{Query});
+return unless $ok && ( $ARGS{ BaseQuery } || $tickets->Count );
+
+my @queues;
+
+{
+    my $tree = RT::Interface::Web::QueryBuilder::Tree->new;
+    $tree->ParseSQL( Query => $ARGS{BaseQuery} || $ARGS{Query}, CurrentUser => $session{'CurrentUser'} );
+    my $referenced_queues = $tree->GetReferencedQueues;
+    for my $name_or_id ( keys %$referenced_queues ) {
+        my $queue = RT::Queue->new($session{CurrentUser});
+        $queue->Load($name_or_id);
+        if ( $queue->id ) {
+            push @queues, $queue;
+        }
+    }
+}
+
+my %status;
+my @lifecycles;
+
+if ( @queues ) {
+    my %lifecycle;
+    for my $queue ( @queues ) {
+        next if $lifecycle{$queue->Lifecycle}++;
+        push @lifecycles, $queue->LifecycleObj;
+    }
+}
+else {
+    @lifecycles = map { RT::Lifecycle->Load(Type => 'ticket', Name => $_) } RT::Lifecycle->List('ticket');
+}
+
+for my $lifecycle ( @lifecycles ) {
+    $status{$_} = 1 for $lifecycle->Valid;
+}
+delete $status{deleted};
+
+if ( !@queues ) {
+    my $queues = RT::Queues->new( $session{CurrentUser} );
+    $queues->UnLimit;
+
+    while ( my $queue = $queues->Next ) {
+        push @queues, $queue;
+        last if @queues == 10; # TODO make a config for it
+    }
+}
+
+my %filter;
+
+if ( $ARGS{BaseQuery} && $ARGS{BaseQuery} ne $ARGS{Query} ) {
+    my $query = $ARGS{Query};
+    $query =~ s!^\s*\(?\s*\Q$ARGS{BaseQuery}\E\s*\)? AND !!;
+    my $tree = RT::Interface::Web::QueryBuilder::Tree->new;
+    $tree->ParseSQL( Query => $query, CurrentUser => $session{'CurrentUser'} );
+    $tree->traverse(
+        sub {
+            my $node = shift;
+
+            return if $node->isRoot;
+            return unless $node->isLeaf;
+
+            my $clause = $node->getNodeValue();
+            if ( $clause->{Key} =~ /Queue/ ) {
+                my $queue = RT::Queue->new($session{CurrentUser});
+                $queue->Load($clause->{Value});
+                if ( $queue->id ) {
+                    $filter{ $clause->{Key} }{ $queue->id } = 1;
+                }
+            }
+            elsif ( $clause->{Key} =~ /Status|SLA/ ) {
+                $filter{ $clause->{Key} }{ $clause->{Value} } = 1;
+            }
+            else {
+                my $key = $clause->{Key};
+                my $value = $clause->{Value};
+                $value =~ s!\\([\\"])!$1!g;
+                $filter{$key} = $value;
+            }
+        }
+    );
+}
+</%INIT>
+
+<%ARGS>
+$Attribute => ''
+</%ARGS>

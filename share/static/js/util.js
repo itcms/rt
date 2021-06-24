@@ -827,7 +827,75 @@ jQuery(function() {
             });
         });
     }
+
+    jQuery(".search-filter").click(function(ev){
+        ev.preventDefault();
+        jQuery.get(
+            RT.Config.WebHomePath + "/Helpers/SearchFilter",
+            {
+                BaseQuery: jQuery(this).data('base-query'),
+                Query: jQuery(this).data('query'),
+                Attribute: jQuery(this).data('attribute')
+            },
+            showModal
+        );
+    });
 });
+
+function filterSearchResults () {
+    var clauses = [];
+
+    var queue_clauses = [];
+    jQuery('#search-results-filter input[name=Queue]:checked').each( function() {
+        queue_clauses.push( 'Queue = ' + '"' + jQuery(this).val() + '"' );
+    });
+
+    if ( queue_clauses.length ) {
+        clauses.push( '( ' + queue_clauses.join( ' OR ' ) + ' )' );
+    }
+
+    var status_clauses = [];
+    jQuery('#search-results-filter input[name=Status]:checked').each( function() {
+        status_clauses.push('Status = ' + '"' + jQuery(this).val() + '"' );
+    });
+
+    if ( status_clauses.length ) {
+        clauses.push( '( ' + status_clauses.join( ' OR ' ) + ' )' );
+    }
+
+    var subject = jQuery('#search-results-filter input[name=Subject]').val();
+    if ( subject && subject.match(/\S/) ) {
+        clauses.push( '( Subject LIKE "' + subject.replace(/(["\\])/g, "\\$1") + '" )' );
+    }
+
+    [ 'Owner', 'Creator', 'LastUpdatedBy' ].forEach( function(role) {
+        var value = jQuery('#search-results-filter :input[name=' + role + ']').val();
+        if ( value && value.match(/\S/) ) {
+            var subs = [];
+            clauses.push( role + ' = "' + value + '"' );
+        }
+    });
+
+    var refresh_form = jQuery('div.refresh form');
+    var base_query = refresh_form.find('input[name=BaseQuery]').val();
+
+    var query;
+    if ( clauses.length ) {
+        if ( base_query.match(/^\s*\(.+\)\s*$/) ) {
+            query = base_query + " AND " + clauses.join( ' AND ' );
+        }
+        else {
+            query = '( ' + base_query + " ) AND " + clauses.join( ' AND ' );
+        }
+    }
+    else {
+        query = base_query;
+    }
+
+    refresh_form.find('input[name=Query]').val(query);
+    refresh_form.submit();
+    return false;
+};
 
 /* inline edit */
 jQuery(function () {
