@@ -14,7 +14,6 @@ $ npm i @fortawesome/free-regular-svg-icons
 
 $ npm i webpack
 $ npm i webpack-cli
-$ npm i babel-minify-webpack-plugin
 
 3. Edit index.js and add the new icons you want.
 
