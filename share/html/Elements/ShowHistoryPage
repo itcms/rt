@@ -128,6 +128,12 @@ while ( my $Transaction = $Transactions->Next ) {
         and RT::Config->Get('SelfServiceCorrespondenceOnly')
         and ($Transaction->Type ne "Correspond" && $Transaction->Type ne "Create");
 
+    if ( $Object->isa('RT::Ticket') && $Object->QueueObj->FirstAttribute( 'HistoryFilter' ) ) {
+        my $filter_types = $Object->QueueObj->FirstAttribute( 'HistoryFilter' )->Content;
+
+        $skip = 1 if not grep {$_ eq $Transaction->Type} @{$filter_types};
+    }
+
     $m->callback(
         %ARGS,
         Transaction   => $Transaction,

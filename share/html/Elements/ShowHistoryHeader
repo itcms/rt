@@ -126,6 +126,13 @@ if ( $ShowDisplayModes or $ShowTitle or $ScrollShowHistory ) {
         }
 
         $titleright .= q{</ul></div>};
+        $titleright .= q{<div class="ml-2 btn-group dropdown"><a id="history-dropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="fas fa-filter icon-bordered fa-2x" alt="Filter History" data-toggle="tooltip" data-placement="top" data-original-title="Filter History"></span></a><ul class="dropdown-menu dropdown-menu-right">};
+
+        my @types = RT->Config->Get( 'HistoryFilterTypes' );
+        foreach my $element ( @types ) {
+            $titleright .= qq{<li class="dropdown-item">$element</li>};
+        }
+        $titleright .= q{</ul></div>};
     }
 
 </%perl>

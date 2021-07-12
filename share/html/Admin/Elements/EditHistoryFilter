@@ -1,0 +1,40 @@
+<div class="form-row">
+  <div class="label col-3">
+    History Filter:
+  </div>
+  <div class="value col-9">
+    <select name="HistoryFilter" class="selectpicker form-control" multiple>
+%     foreach my $type ( @options ) {
+%         my $selected = '';
+%         $selected = 'selected="selected"' if grep {$_ eq $type} @{$default};
+
+          <option <% $selected |n %> value="<% $type %>"><% $type %></option>
+%     }
+    </select>
+  </div>
+</div>
+
+<%INIT>
+return unless $QueueObj;
+
+my $queue_attribute = $QueueObj->FirstAttribute( 'HistoryFilter' );
+my $default = $queue_attribute ? $queue_attribute->Content : [];
+
+my @options = RT->Config->Get( 'HistoryFilterTypes' );
+
+# See if we need to update
+if ( $HistoryFilter ) {
+    unless ( ref $HistoryFilter ) {
+        $HistoryFilter = [ $HistoryFilter ];
+    }
+    my ($ret, $msg) = $QueueObj->SetAttribute( Name => 'HistoryFilter', Content => $HistoryFilter );
+    RT::Logger->eror( "Could not set History Filter queue attribute: $msg" ) unless $ret;
+
+    $default = $HistoryFilter if $ret;
+}
+</%INIT>
+
+<%ARGS>
+$QueueObj      => undef
+$HistoryFilter => undef
+</%ARGS>
