@@ -3448,6 +3448,15 @@ user sent on reply or comment.
 
 Set($ShowBccHeader, 0);
 
+=item C<@HistoryFilterTypes>
+
+Transaction types that ticket history can be filtered by, the default options
+are 'Create', 'Correspond' and 'Comment'.
+
+=cut
+
+Set(@HistoryFilterTypes, qw(Create Correspond Comment));
+
 =item C<$TrustHTMLAttachments>
 
 If C<TrustHTMLAttachments> is not defined, we will display them as
